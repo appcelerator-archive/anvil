@@ -81,24 +81,24 @@
 	require "common.php";
 	db_open();
 
-	$query="SELECT * FROM driver_runs WHERE run_id = " . $_GET["run_id"] . 
+	$query="SELECT id FROM driver_runs WHERE run_id = " . $_GET["run_id"] . 
 		" AND driver_id = \"" . $_GET["driver_id"] . "\"";
 
 	$result=mysql_query($query);
 	while($row = mysql_fetch_array($result)) {
-		$query2="SELECT * FROM config_sets WHERE driver_run_id = " . $row["id"];
+		$query2="SELECT id, name FROM config_sets WHERE driver_run_id = " . $row["id"];
 		$result2=mysql_query($query2);
 		while($row2 = mysql_fetch_array($result2)) {
 			echo "<div id=\"config_set\">\n";
 			echo "\t<div>Config Set: " . $row2["name"] . "</div>\n\n";
 
-			$query3="SELECT * FROM configs WHERE config_set_id = " . $row2["id"];
+			$query3="SELECT id, name FROM configs WHERE config_set_id = " . $row2["id"];
 			$result3=mysql_query($query3);
 			while($row3 = mysql_fetch_array($result3)) {
 				echo "\t<div id=\"config\">\n";
 				echo "\t\t<div>Config: " . $row3["name"] . "</div>\n\n";
 
-				$query4="SELECT * FROM suites WHERE config_id = " . $row3["id"];
+				$query4="SELECT id, name FROM suites WHERE config_id = " . $row3["id"];
 				$result4=mysql_query($query4);
 				while($row4 = mysql_fetch_array($result4)) {
 					echo "\t\t<div id=\"suite\">\n";

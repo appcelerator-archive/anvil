@@ -1,6 +1,6 @@
 // direct alias doesn't work in chrome so wrapping inside within function
 var getElementById = function(id) {
-        return document.getElementById(id);
+	return document.getElementById(id);
 };
 
 var jqplotRef = $.jqplot;

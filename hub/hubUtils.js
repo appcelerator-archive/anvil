@@ -12,7 +12,7 @@
 
 var fs = require("fs"),
 child_process = require("child_process"),
-path = require("path");
+path = require("path")
 
 module.exports = new function() {
 	var self = this,
