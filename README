@@ -4,13 +4,12 @@ DESCRIPTION:
 Anvil is a testing framework that replaces the old Drillbit testing framework.  The anvil test framework no longer depends on the old titanium desktop product and is now written entirely in  Javascript using titanium and node.js.
 
 Anvil is made up of the following subcomponents:
-1) Hub - web service that provides reporting, CI integration and remote control of overall test process.  It will be possible for the hub to kick off a test run by notifying the drivers to start off a test.
-2) Driver - a node.js process that builds, deploys and manages a harness that runs on device or simulator
-3) Harness - titanium app that runs on device or simulator and contains all the actual test suites that make up a anvil test pass
+1. Hub - web service that provides reporting, CI integration and remote control of overall test process.  It will be possible for the hub to kick off a test run by notifying the drivers to start off a test.
+2. Driver - a node.js process that builds, deploys and manages a harness that runs on device or simulator
+3. Harness - titanium app that runs on device or simulator and contains all the actual test suites that make up a anvil test pass
 
 HUB:
 The hub is a collection of various software components that live in a hosted linux environment and whose purpose is to serve as a bridge between driver instances and the CI server.  An additional role of the hub is to populate a mysql database that is used as the driving data source behind Anvil reports accessible via the web.  The hub serves as a TCP server that both the CI server and driver instances connect to.
-
 
 DRIVER:
 The role of the driver is to run the harness on device or simulator and get results back.  To that end, the driver is capable of creating a test harness from a template, building it, installing to device or simulator, running specified suites or tests and getting results back.
@@ -18,6 +17,7 @@ The role of the driver is to run the harness on device or simulator and get resu
 When running the driver, a logging level can be set that will control the level of detail printed to stdout.  The --log-level property can take "quiet", "normal" (default) or "verbose".  Log level "quiet" tells the driver to only print test results summary and error output.  Log level "normal" tells the driver to print "quiet" content along with normal operation output (creating directory, etc).  Log level "verbose" tells the driver to print "quiet" and "normal" content along with all debug info such as output seen when calling the platform specific build scripts.
 
 For each test run, the driver creates log files that live in a logs directory under a configurable temp location that is usually:
+
 "/tmp/driver/logs/<platform>/log_<month>-<day>-<year>_<hour>-<minute>-<second>-<millisecond>"
 
 Logs are rotated (oldest deleted) as needed per platform based on a configuration property set in driver.js.  Logs contain all driver output regardless of the --log-level property specified when running the driver.
@@ -27,12 +27,12 @@ A normal driver run follows this general flow:
 2. Build harness based on first config in the active config set
 3. Install harness to device / simulator
 4. Establish connection between driver and harness (socket for Android/iOS and http request/response chain for mobile web).
-5. Driver asks harness for list of suites via connection established in step #3
+5. Driver asks harness for list of suites via connection established in step 3
 6. Driver asks harness for list of tests in current suite
 7. Driver tells the harness to run the current test in the current suite
 8. Harness returns results for specified test
-9. repeat #7-8 till suite is finished and then go back to #5 until all suites have run
-10. start over at #2 if there are more configurations to be run within the set
+9. repeat 7-8 till suite is finished and then go back to 5 until all suites have run
+10. start over at 2 if there are more configurations to be run within the set
 11. once all configurations are done, move to the next config set
 12. if all config sets have run, print result summary
 
@@ -88,6 +88,7 @@ SETUP NOTES:
 USAGE:
 
 Driver:
+	
 "node driver.js --mode=<mode> --platform=<platform> [--log-level=<level>][--command=<command>]"
 
 - mode argument can be: "local" or "remote"
