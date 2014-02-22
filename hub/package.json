@@ -1,0 +1,12 @@
+{
+  "name": "anvil",
+  "preferGlobal": true,
+  "version": "1.0.0",
+  "author": "Appcelerator <npmjs@appcelerator.com>",
+  "description": "A unit testing framework for Titanium applications",
+  "dependencies" : {
+    "nodemailer"    :  "*",
+    "wrench"        :  "*",
+    "mysql"    :  "0.9.x"
+  }
+}
