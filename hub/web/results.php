@@ -5,56 +5,13 @@
 		<title>Reporting</title>
 
 		<script src="common.js"></script>
+		<link rel="stylesheet" type="text/css" href="style.css">
 		<script>
 			function updateSummary(totalPassed, totalFailed) {
 				getElementById("totalPassed").innerHTML = totalPassed;
 				getElementById("totalFailed").innerHTML = totalFailed;
 			}
 		</script>
-
-		<style type="text/css">
-			#results_description
-			{
-				text-align: left;
-				margin-bottom: 30px;
-			}
-
-			#results_summary
-			{
-				margin-left: 50px;
-			}
-
-			#num_results_item
-			{
-				margin-left: 20px;
-			}
-
-			#raw_results_link
-			{
-				margin-top: 20px;
-			}
-
-			#results_container
-			{
-				margin-top: 50px;
-			}
-
-			#config_set
-			{
-				margin-left: 50px;
-			}
-
-			#config
-			{
-				margin-left: 50px;
-			}
-
-			#suite
-			{
-				margin-left: 50px;
-				margin-bottom: 50px;
-			}
-		</style>
 	</head>
 	<body>
 		<div>
@@ -104,7 +61,7 @@
 					echo "\t\t<div id=\"suite\">\n";
 					echo "\t\t\t<div>Suite: " . $row4["name"] . "</div>\n\n";
 
-					echo "\t\t\t<table border=\"1\">\n";
+					echo "\t\t\t<table>\n";
 					echo "\t\t\t\t<tr>\n";
 					echo "\t\t\t\t\t<th>Name</th><th>Result</th><th>Duration</th><th>Description</th>\n";
 					echo "\t\t\t\t</tr>\n";

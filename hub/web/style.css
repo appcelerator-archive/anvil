@@ -1,0 +1,168 @@
+body {
+font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+font-size:14px;
+line-height:20px;
+color:#333;
+}
+
+#run_description {
+text-align:left;
+margin-bottom:50px;
+}
+
+#branches_container {
+float:left;
+width:10%;
+}
+
+#branches_title {
+font-size:large;
+}
+
+#reports_container {
+float:left;
+width:90%;
+}
+
+#hub_state_title {
+font-size:large;
+margin-bottom:40px;
+}
+
+#hub_state_running {
+color:green;
+}
+
+#hub_state_dead {
+color:red;
+}
+
+#driver_state_container {
+margin-bottom:80px;
+}
+
+#driver_state_title {
+font-size:large;
+margin-bottom:3px;
+}
+
+#run_summary_element {
+float:left;
+width:100px;
+}
+
+.table2 thead th {
+color:#fff;
+border:1px solid #F5F5F5;
+border-bottom:3px solid maroon;
+background-color:maroon;
+background:0 2% #8b0000 51% red 87% );
+padding:15px;
+}
+
+.table2 tbody td {
+text-align:center;
+border:1px solid maroon;
+border-radius:2px;
+color:#666;
+padding:10px;
+}
+
+.table1 thead th {
+color:#fff;
+border:1px solid #93CE37;
+border-bottom:3px solid #9ED929;
+background-color:#9DD929;
+background:0 2% #8bc642 51% #9ed929 87% );
+padding:15px;
+}
+
+.table1 thead th:empty {
+background:transparent;
+border:none;
+}
+
+.table1 tbody td {
+text-align:center;
+background-color:#DEF3CA;
+border:2px solid #E7EFE0;
+border-radius:2px;
+color:#666;
+padding:10px;
+}
+
+.table1 tbody tr.alt td {
+color:#000;
+background-color:#FFF;
+}
+
+#results_description {
+text-align:left;
+margin-bottom:30px;
+}
+
+#num_results_item {
+margin-left:20px;
+}
+
+#raw_results_link {
+margin-top:20px;
+}
+
+#suite {
+margin-left:50px;
+margin-bottom:50px;
+}
+
+#suite table {
+line-height:1.4em;
+font-style:normal;
+border-collapse:separate;
+width:100%;
+}
+
+#suite table th {
+font-weight:700;
+border-bottom:1px solid #AAA;
+padding:5px 2px;
+}
+
+#suite table td {
+border-bottom:1px solid #AAA;
+padding:5px 2px;
+}
+
+#suite table td:nth-child(1) {
+width:40%;
+}
+
+#suite table td:nth-child(2) {
+width:20%;
+text-align:center;
+}
+
+#suite table td:nth-child(3) {
+width:10%;
+text-align:center;
+}
+
+#suite table td:nth-child(4) {
+width:30%;
+text-align:center;
+}
+
+#run_container,#complete_result_container,#results_container {
+margin-top:50px;
+}
+
+table.table1,table.table2 {
+width:100%;
+font-weight:700;
+line-height:1.4em;
+font-style:normal;
+border-collapse:separate;
+}
+
+#results_summary,#config_set,#config {
+margin-left:0;
+}
