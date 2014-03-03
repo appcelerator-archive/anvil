@@ -27,7 +27,7 @@
 		}
 	}
 
-	function writeTable($git_hash) { ?>
+	function writeTableShort($git_hash) { ?>
 		<table class="table1">
 			<tbody>
 			<?php
@@ -118,7 +118,7 @@ header('Cache-Control: max-age=259200');
 				<?php
 				if (isset($_GET["git_hash"])) {	?>
 					<!-- START COMPLETE RESULT COMPARISON -->
-					<?php writeTable($_GET["git_hash"]) ?>
+					<?php writeTableShort($_GET["git_hash"]) ?>
 					<!-- END COMPLETE RESULT COMPARISON -->
 				<?php } ?>
   </body>
