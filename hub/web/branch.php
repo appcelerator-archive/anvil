@@ -10,7 +10,7 @@
 		return "<FONT COLOR=\"#660000\">". $value . "</FONT>";
 	}
 
-	function writeTable($branch) { ?>
+	function writeTable($branch, $history) { ?>
 		<table class="table1">
 			<thead>
 				<tr>
@@ -20,6 +20,9 @@
 			<tbody>
 			<?php
 
+				if(!isset($history)) {
+					$history = 5;
+				}
 				$query = "SELECT run_id, A.branch AS 'branch', A.base_sdk_filename AS 'file' ,A.git_hash AS 'git_hash', A.timestamp AS 'timestamp',
 										SUM(if(driver_id = 'android1', passed_tests, 0)) AS 'a2.3.6P' ,
 										SUM(if(driver_id = 'android1', failed_tests, 0)) AS 'a2.3.6F' ,
@@ -36,7 +39,7 @@
 										FROM driver_runs
 										LEFT JOIN (SELECT * FROM runs) AS A ON driver_runs.run_id = A.id
 										WHERE driver_runs.run_id = A.id AND A.branch = '".$branch."'
-										GROUP BY run_id ORDER BY run_id  DESC LIMIT 5;";
+										GROUP BY run_id ORDER BY run_id  DESC LIMIT ".$history." ;";
 					$result=mysql_query($query);
 
 					$alt = 0;
@@ -74,7 +77,7 @@
 				<?php
 				if (isset($_GET["branch"])) {	?>
 					<!-- START COMPLETE RESULT COMPARISON -->
-					<?php writeTable($_GET["branch"]) ?>
+					<?php writeTable($_GET["branch"], $_GET["history"]) ?>
 					<!-- END COMPLETE RESULT COMPARISON -->
 				<?php } ?>
 </body>

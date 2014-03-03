@@ -65,154 +65,128 @@
 <html>
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-		<title>Reporting</title>
-		<style type="text/css">
-			#performance_title
-			{
-				text-align: left;
-				margin-bottom: 30px;
-			}
-
-			#all_suites_container
-			{
-				margin-left: 50px;
-				margin-bottom: 30px;
-			}
-
-			#branch_performance_container
-			{
-				margin-left: 50px;
-			}
-
-			#config_container
-			{
-				margin-left: 50px;
-			}
-
-			#suite_contents
-			{
-				margin-left: 50px;
-				margin-bottom: 50px;
-			}
-
-			#suite_link
-			{
-				margin-left: 50px;
-			}
-
-			#suite_chart_container
-			{
-				margin-left: 50px;
-				margin-bottom: 50px;
-			}
-
-			#suite_chart_contents
-			{
-				margin-left: 50px;
-				margin-bottom: 40px;
-			}
-		</style>
+		<title>Appcelerator Anvil</title>
+		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
-		<div>
-			<h1 id="performance_title">Anvil performance for branch [<?php echo $_GET["branch"]; ?>]</h1>
+		<header>
+			<div class="container">
+				<div class="row">
+					<div class="span11 offset1">
+						<a href="/">
+						<img src="img/appc.png">
+						<h1>Anvil</h1>
+						</a>
+					</div>
+				</div>
+			</div>
+		</header>
+		<div class="container" id="content">
+
+		<div class="span3 offset1">
+			<?php generateNavigation() ?>
 		</div>
+			<div class="span12" id="reports_container">
 
-<?php
-	if (isset($_GET["suite"]) && isset($_GET["all_suites"])) {
-		echo "\t\t<div id=\"all_suite_container\">\n";
-		echo "\t\t\t<a href=\"performance.php?branch=" . $_GET["branch"] . "&all_suites=true\">All Suites</a> (this can take a long time to load)\n";
-		echo "\t\t</div>\n";
-	}
-?>
+			<h2 id="performance_title"><?php echo $_GET["branch"]; ?> Branch Performance</h2>
+			<a href="runs.php?branch=<?php echo $_GET['branch'] ?>">Runs</a> | <a href="performance.php?branch=<?php echo $_GET['branch'] ?>">Performance</a>
 
-		<div id="branch_performance_container">
-<?php loadJsDependencies(); ?>
+		<?php
+			if (isset($_GET["suite"]) && isset($_GET["all_suites"])) { ?>
+			<div id="all_suite_container">
+				<a href="performance.php?branch=<?php echo$_GET["branch"] ?>&all_suites=true">All Suites</a> (this can take a long time to load)
+			</div>
+		<?php	}
+		?>
 
-<?php
-	if (isset($_GET["all_suites"]) || isset($_GET["suite"])) {
-		echo "<a id=\"next_batch_link\" href=\"\">Next set</a>\n";
-	}
-?>
+			<div id="branch_performance_container">
+				<?php loadJsDependencies(); ?>
 
-<?php
-	// set time reporting for run history to PST since that is the main user base
-	date_default_timezone_set("America/Los_Angeles");
-
-	$numRuns = "10";
-	if (isset($_GET["suite"])) {
-		$numRuns = "20";
-	}
-
-	$runs = array();
-	$query = "SELECT * FROM runs WHERE branch = \"" . $_GET["branch"] . "\"";
-
-	if (isset($_GET["last_run_id"])) {
-		$query = $query . " AND id < " . $_GET["last_run_id"];
-	}
-
-	$query = $query . " ORDER BY timestamp DESC LIMIT " . $numRuns;
-	$result=mysql_query($query);
-
-	$last_run_id = 0;
-	while($row = mysql_fetch_array($result)) {
-		array_push($runs, $row);
-		$last_run_id = $row["id"];
-	}
-
-	if (isset($_GET["suite"])) {
-		print_suite_performance($_GET["branch"], $_GET["config_set"], $_GET["config"], $_GET["suite"], $runs);
-
-	} else {
-		echo "<!-- START GENERATED CHARTS -->\n";
-
-		$query="SELECT DISTINCT name FROM config_sets WHERE branch = \"" . $_GET["branch"] . "\"";
-		$result=mysql_query($query);
-		while($row = mysql_fetch_array($result)) {
-			echo "<div>\n";
-			echo "\t<div>Config Set: " . $row["name"] . "</div>\n\n";
-
-			$query2="SELECT DISTINCT name FROM configs WHERE branch = \"" . $_GET["branch"] . "\" AND config_set_name = \"" . $row["name"] . "\"";
-			$result2=mysql_query($query2);
-			while($row2 = mysql_fetch_array($result2)) {
-				echo "\t<div id=\"config_container\">\n";
-				echo "\t\t<div>Config: " . $row2["name"] . "</div>\n\n";
-
-				$query3="SELECT DISTINCT name FROM suites WHERE branch = \"" . $_GET["branch"] . "\" AND config_name = \"" . $row2["name"] . "\"";
-				$result3=mysql_query($query3);
-				while($row3 = mysql_fetch_array($result3)) {
-					if(isset($_GET["all_suites"])) {
-						#echo "\t\t<div id=\"suite_contents\">\n";
-						#echo "\t\t\t<div>Suite: " . $row3["name"] . "</div>\n\n";
-						print_suite_performance($_GET["branch"], $row["name"], $row2["name"], $row3["name"], $runs);
-						#echo "\t\t</div>\n";
-
-					} else {
-						echo "\t\t<div id=\"suite_link\">\n" .
-							"\t\t\t<a href=\"performance.php?branch=" . $_GET["branch"] . 
-							"&config_set=" . $row["name"] . "&config=" . $row2["name"] .
-							"&suite=" . $row3["name"] . "\">Suite: " . $row3["name"] . "</a>\n" .
-							"\t\t</div>\n";
+				<?php
+					if (isset($_GET["all_suites"]) || isset($_GET["suite"])) {
+						echo "<a id=\"next_batch_link\" href=\"\">Next set</a>\n";
 					}
-				}
+				?>
 
-				echo "\t</div>\n";
+		<?php
+			// set time reporting for run history to PST since that is the main user base
+			date_default_timezone_set("America/Los_Angeles");
+
+			$numRuns = "10";
+			if (isset($_GET["suite"])) {
+				$numRuns = "20";
 			}
 
-			echo "</div>\n";
-		}
+			$runs = array();
+			$query = "SELECT * FROM runs WHERE branch = \"" . $_GET["branch"] . "\"";
 
-		echo "<!--  END GENERATED CHARTS -->\n";
-	}
+			if (isset($_GET["last_run_id"])) {
+				$query = $query . " AND id < " . $_GET["last_run_id"];
+			}
 
-	if (isset($_GET["all_suites"]) || isset($_GET["suite"])) {
-		echo "<script>\n" .
-			"\tvar nextBatchLink = document.getElementById(\"next_batch_link\");\n" .
-			"\tnextBatchLink.href = \"performance.php?branch=" . $_GET["branch"] . "&config_set=" . $_GET["config_set"] . "&config=" . $_GET["config"] . "&suite=" . $_GET["suite"] . "&last_run_id=" . $last_run_id . "\";\n" .
-			"</script>\n";
-	}
-?>
+			$query = $query . " ORDER BY timestamp DESC LIMIT " . $numRuns;
+			$result=mysql_query($query);
 
-		</div>
+			$last_run_id = 0;
+			while($row = mysql_fetch_array($result)) {
+				array_push($runs, $row);
+				$last_run_id = $row["id"];
+			}
+
+			if (isset($_GET["suite"])) {
+				print_suite_performance($_GET["branch"], $_GET["config_set"], $_GET["config"], $_GET["suite"], $runs);
+
+			} else {
+				echo "<!-- START GENERATED CHARTS -->\n";
+
+				$query="SELECT DISTINCT name FROM config_sets WHERE branch = \"" . $_GET["branch"] . "\"";
+				$result=mysql_query($query);
+				while($row = mysql_fetch_array($result)) {
+					echo "<div>\n";
+					echo "\t<div>Config Set: " . $row["name"] . "</div>\n\n";
+
+					$query2="SELECT DISTINCT name FROM configs WHERE branch = \"" . $_GET["branch"] . "\" AND config_set_name = \"" . $row["name"] . "\"";
+					$result2=mysql_query($query2);
+					while($row2 = mysql_fetch_array($result2)) {
+						echo "\t<div id=\"config_container\">\n";
+						echo "\t\t<div>Config: " . $row2["name"] . "</div>\n\n";
+
+						$query3="SELECT DISTINCT name FROM suites WHERE branch = \"" . $_GET["branch"] . "\" AND config_name = \"" . $row2["name"] . "\"";
+						$result3=mysql_query($query3);
+						while($row3 = mysql_fetch_array($result3)) {
+							if(isset($_GET["all_suites"])) {
+								#echo "\t\t<div id=\"suite_contents\">\n";
+								#echo "\t\t\t<div>Suite: " . $row3["name"] . "</div>\n\n";
+								print_suite_performance($_GET["branch"], $row["name"], $row2["name"], $row3["name"], $runs);
+								#echo "\t\t</div>\n";
+
+							} else {
+								echo "\t\t<div id=\"suite_link\">\n" .
+									"\t\t\t<a href=\"performance.php?branch=" . $_GET["branch"] .
+									"&config_set=" . $row["name"] . "&config=" . $row2["name"] .
+									"&suite=" . $row3["name"] . "\">Suite: " . $row3["name"] . "</a>\n" .
+									"\t\t</div>\n";
+							}
+						}
+
+						echo "\t</div>\n";
+					}
+
+					echo "</div>\n";
+				}
+
+				echo "<!--  END GENERATED CHARTS -->\n";
+			}
+
+			if (isset($_GET["all_suites"]) || isset($_GET["suite"])) {
+				echo "<script>\n" .
+					"\tvar nextBatchLink = document.getElementById(\"next_batch_link\");\n" .
+					"\tnextBatchLink.href = \"performance.php?branch=" . $_GET["branch"] . "&config_set=" . $_GET["config_set"] . "&config=" . $_GET["config"] . "&suite=" . $_GET["suite"] . "&last_run_id=" . $last_run_id . "\";\n" .
+					"</script>\n";
+			}
+		?>
+
+				</div>
+			</div>
 	</body>
 </html>

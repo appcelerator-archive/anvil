@@ -18,37 +18,52 @@ function drawRunCharts(elementId, branch, gitHash, timestamp, runId, driverIds, 
 	getElementById(elementId + "Githash").innerHTML = gitHash;
 
 	jqplotRef(elementId + "Contents", chartData, {
+		seriesColors: [ "#99EE99", "#EE9999"],
 		stackSeries: true,
 		seriesDefaults: {
 			renderer:jqplotRef.BarRenderer,
 			rendererOptions: {
 				barDirection: 'horizontal',
-				barMargin: 20,
-				highlightMouseDown: true   
+				barMargin: 10,
+				barWidth: 30,
+				highlightMouseDown: true
 			},
+			shadow: false,
 			pointLabels: {show: true}
 		},
 		series: series,
 		axes: {
 			xaxis: {
-				label: "Pass / Fail"
+				tickOptions: {
+						showGridline: false // wether to draw a gridline (across the whole grid) at this tick,
+				},
+				max: 800
 			},
 			yaxis: {
-				label: "Driver ID",
 				renderer: jqplotRef.CategoryAxisRenderer,
 				ticks: driverIds,
-				padMin: 0
+				padMin: 0,
+				tickOptions: {
+            showMark: false,
+            showGridline: false, // wether to draw a gridline (across the whole grid) at this tick,
+            markSize: 0,        // length the tick will extend beyond the grid in pixels.
+        },
+				showTickMarks: false
 			}
 		},
 		legend: {
-			show: true,
+			show: false,
 			location: 'e',
 			placement: 'outside'
-		}      
+		},
+		grid: {
+			shadow: false,
+			borderWidth: 0
+		}
 	});
 
 	$("#" + elementId + "Contents").bind('jqplotDataClick', function (event, seriesIndex, pointIndex, data) {
-		window.location.href = "results.php?branch=" + branch + "&git_hash=" + gitHash + 
+		window.location.href = "results.php?branch=" + branch + "&git_hash=" + gitHash +
 			"&run_id=" + runId + "&driver_id=" + driverIds[pointIndex];
 	});
 }
@@ -63,7 +78,7 @@ function drawPerformanceCharts(elementId, chartTitle, runIds, driverIds, chartDa
 	}
 
 	jqplotRef(elementId, chartData, {
-		title: chartTitle, 
+		title: chartTitle,
 		seriesDefaults: {
 			showMarker:false,
 			pointLabels: {show:true},
