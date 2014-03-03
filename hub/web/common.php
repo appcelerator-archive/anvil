@@ -43,12 +43,12 @@
 	function driverStatus($state, $timestamp) {
 		if ($state === "running") {
 			if ($timestamp < time() - (20 * 60)) {
-				return "<span style='color:maroon'>&bull;</span>";
+				return "<span style='color:maroon;font-size:150%'>&bull;</span>";
 			} else {
-				return "<span style='color:yellow'>&bull;</span>";
+				return "<span style='color:orange;font-size:150%'>&bull;</span>";
 			}
 		} else {
-			return "<span style='color:green'>&bull;</span>";
+			return "<span style='color:green;font-size:150%'>&bull;</span>";
 		}
 	}
 
@@ -109,7 +109,7 @@
 			</thead>
 			<tbody>
 			<?php
-					$query = "SELECT id, branch, base_sdk_filename AS 'file', git_hash, timestamp FROM runs WHERE branch = '".$branch."' AND id not IN (SELECT run_id from driver_runs) ORDER BY TIMESTAMP DESC";
+					$query = "SELECT id, branch, base_sdk_filename AS 'file', git_hash, timestamp FROM runs WHERE branch = '".mysql_real_escape_string($branch)."' AND id not IN (SELECT run_id from driver_runs) ORDER BY TIMESTAMP DESC";
 					$result = mysql_query($query);
 					while($row = mysql_fetch_array($result)) {
 									echo "\t\t<tr>\n";
@@ -171,6 +171,12 @@
 			</thead>
 			<tbody>
 			<?php
+
+				$branch_clause = "";
+				if(!is_null($branch)) {
+					$branch_clause = " AND A.branch = '".mysql_real_escape_string($branch)."' ";
+				}
+
 				$query = "SELECT run_id, A.branch AS 'branch', A.base_sdk_filename AS 'file' ,A.git_hash AS 'git_hash', A.timestamp AS 'timestamp',
 										SUM(if(driver_id = 'android1', passed_tests, 0)) AS 'a2.3.6P' ,
 										SUM(if(driver_id = 'android1', failed_tests, 0)) AS 'a2.3.6F' ,
@@ -186,8 +192,8 @@
 										SUM(if(driver_id = 'ios4', failed_tests, 0)) AS 'i6.0F'
 										FROM driver_runs
 										LEFT JOIN (SELECT * FROM runs) AS A ON driver_runs.run_id = A.id
-										WHERE driver_runs.run_id = A.id AND A.branch = '".$branch."'
-										GROUP BY run_id ORDER BY run_id  DESC LIMIT ".$rows.";";
+										WHERE driver_runs.run_id = A.id ".$branch_clause."
+										GROUP BY run_id ORDER BY run_id  DESC LIMIT ".mysql_real_escape_string($rows).";";
 					$result=mysql_query($query);
 
 					$alt = 0;
