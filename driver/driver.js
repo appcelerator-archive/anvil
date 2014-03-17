@@ -129,7 +129,6 @@ function init() {
 	};
 
 	driverGlobal.driverDir = __dirname;
-	driverGlobal.configSetDir = path.resolve(driverGlobal.driverDir, "..", "..", "support", "anvil", "configSet");
 	driverGlobal.harnessTemplateDir = path.resolve(driverGlobal.driverDir, "harnessResourcesTemplate");
 
 	driverGlobal.platforms = {};
@@ -263,6 +262,21 @@ function loadConfigModule() {
 		driverUtils.checkConfigItem("tempDir", config.tempDir, "string");
 		driverGlobal.harnessDir = path.resolve(config.tempDir, "harness");
 		driverGlobal.logsDir = path.resolve(config.tempDir, "logs");
+		driverGlobal.useGlobaltitaniumCLI = false;
+		var __dir = path.existsSync(path.resolve(config.titaniumCLIpath, "node_modules/titanium/bin/titanium"));
+		if ((config.titaniumCLIpath != undefined) && !(__dir)) {
+			console.log("titaniumCLIpath path specified does not exist, defaulting to global location");
+			driverGlobal.useGlobaltitaniumCLI = true;
+			driverGlobal.cliDir = path.resolve("/usr/local/bin/titanium");
+			if (!path.existsSync(driverGlobal.cliDir)) {
+				console.log("titanium cli is not installed. Exiting !!!");
+				console.log("Either use `sudo npm -g install git://github.com/appcelerator/titanium.git` or `npm install git://github.com/appcelerator/titanium.git`");
+				process.exit(1);
+			}
+		} else {
+			driverGlobal.cliDir = __dir;
+		}
+
 	}
 
 	/*

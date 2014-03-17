@@ -40,6 +40,15 @@ module.exports = new function() {
 	this.maxLogs = 20;
 
 	/*
+	Change this when you are running your server in remote mode to point to the root of the 
+	node_modules where titanium was installed.
+
+	Example: this.titaniumCLIpath = path.resolve(tiDir,"anvil","driver");
+	*/
+	this.titaniumCLIpath = "";
+
+
+	/*
 	change this in the case you normally want a different logging level (can be "quiet", 
 	"normal" or "verbose")
 	*/
