@@ -119,7 +119,7 @@ module.exports = new function() {
 						console.log("no sdkBaseFilename property on message, ignoring");
 						return;
 					}
-
+					driverGlobal.config.sdkBaseFilename = payloadObject.sdkBaseFilename;
 					downloadAndUnpackSdk(payloadObject.branch, "mobilesdk-" + payloadObject.sdkBaseFilename + "-osx.zip", function() {
 						driverGlobal.platform.processCommand(payloadObject.command);
 					});
@@ -154,6 +154,26 @@ module.exports = new function() {
 	}
 
 	function downloadAndUnpackSdk(branch, sdkFilename, callback) {
+		function switchCLI(branch) {
+			if (driverGlobal.useGlobaltitaniumCLI === false) {
+				var cwd = process.cwd();
+				process.chdir(driverGlobal.config.titaniumCLIpath);
+				driverUtils.runCommand("npm install git+https://github.com/appcelerator/titanium.git#" + branch,
+									driverUtils.logStderr,
+									function (error, stdout, stderr) {
+										if (error !== null) {
+											driverUtils.log("error <" + error + "> occurred when trying change CLI to " + branch + "branch");
+											process.exit(1);
+										}
+										process.chdir(cwd);
+										downloadSdk();
+									});
+				} else {
+				driverUtils.log("Cannot run `remote` mode with global titanium cli.");
+				process.exit(1);
+			}
+		}
+
 		function downloadSdk() {
 			var file = fs.createWriteStream(sdkFilename),
 			options = {
@@ -183,6 +203,18 @@ module.exports = new function() {
 					process.exit(1);
 				}
 
+				if(!driverGlobal.useGlobaltitaniumCLI) {
+					driverGlobal.cliDir = path.resolve(driverGlobal.config.titaniumCLIpath, "node_modules/titanium/bin/titanium");
+				} else {
+					driverGlobal.cliDir = path.resolve("/usr/local/bin/titanium");;
+				}
+				var command = driverGlobal.cliDir + " config paths.sdks --append " + process.cwd();
+				driverUtils.runCommand(command, driverUtils.logStderr, function(error, stdout, stderr){
+					if (error != null) {
+						driverUtils.log("error <" + error + "> occurred when trying to copy SDK");
+						process.exit(1);
+					}
+				});
 				process.chdir(driverGlobal.driverDir);
 				driverUtils.setTargetTiSdk();
 
@@ -212,12 +244,13 @@ module.exports = new function() {
 			wrench.rmdirSyncRecursive("modules", false);
 		}
 
-		downloadSdk();
+		switchCLI(branch);
 	}
 
 	function packageAndSendResults(results, callback) {
-		var versionContents = fs.readFileSync(path.join(driverGlobal.config.targetTiSdkDir, "version.txt"), "utf-8"),
-		version = "",
+		var versionContents = fs.readFileSync(path.join(driverGlobal.config.targetTiSdkDir, "package.json"), "utf-8"),
+		packageContent = JSON.parse(versionContents),
+		version = packageContent.version,
 		splitPos = versionContents.indexOf("="),
 		resultsFile = fs.openSync(path.join(driverGlobal.currentLogDir, "json_results"), 'w'),
 		command = "tar -czvf " + path.join(driverGlobal.currentLogDir, "results.tgz") + " -C " +

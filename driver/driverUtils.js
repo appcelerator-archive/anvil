@@ -192,7 +192,10 @@ module.exports = new function() {
 					callback();
 
 				} else {
-					wrench.rmdirSyncRecursive(path.resolve(driverGlobal.logsDir, driverGlobal.platform.name, dirsMap[dirTimestamps[oldestDirIndex]]), false);
+					var logPath = path.resolve(driverGlobal.logsDir, driverGlobal.platform.name, dirsMap[dirTimestamps[oldestDirIndex]]);
+					if (fs.lstatSync(logPath).isDirectory()) {
+						wrench.rmdirSyncRecursive(path.resolve(driverGlobal.logsDir, driverGlobal.platform.name, dirsMap[dirTimestamps[oldestDirIndex]]), false);
+					}
 					deleteLog(--oldestDirIndex);
 				}
 			}
@@ -262,7 +265,6 @@ module.exports = new function() {
 			requestedVersion = this.getArgument(process.argv, "--sdk-version"),
 			files = fs.readdirSync(path.resolve(driverGlobal.config.tiSdkDirs)),
 			i = 0;
-
 		for (; i < files.length; i++) {
 			if (files[i] === requestedVersion) {
 				versionDir = requestedVersion;
@@ -288,6 +290,16 @@ module.exports = new function() {
 
 			console.log("using Titanium SDK version <" + versionDir + ">");
 			driverGlobal.config.targetTiSdkDir = path.resolve(driverGlobal.config.tiSdkDirs, versionDir);
+			driverGlobal.configSetDir = path.resolve(driverGlobal.config.targetTiSdkDir, "anvil", "configSet");
+
+			var command = driverGlobal.cliDir + " config paths.sdks --append " + path.resolve(driverGlobal.config.tiSdkDirs,"..","..");
+			this.runCommand(command, this.logStderr, function(error, stdout, stderr){
+				if (error != null) {
+					driverUtils.log("error <" + error + "> occurred when trying to set SDK");
+					process.exit(1);
+				}
+			});
+
 		}
 	};
 

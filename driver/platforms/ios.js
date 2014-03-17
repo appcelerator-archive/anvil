@@ -85,10 +85,13 @@ module.exports = new function() {
 		from the driver
 		*/
 		common.customTiappXmlProperties["driver.socketPort"] = {value: driverGlobal.config.iosSocketPort, type: "int"};
+		var sdkName = driverGlobal.config.targetTiSdkDir.replace(/^.*[\\\/]/, '');
 
 		common.createHarness(
 			"ios",
-			"\"" + path.resolve(driverGlobal.config.targetTiSdkDir, "titanium.py") + "\" create --dir=" + path.resolve(driverGlobal.harnessDir, "ios") + " --platform=iphone --name=harness --type=project --id=com.appcelerator.harness",
+			driverGlobal.cliDir + " --no-colors --no-progress-bars --no-prompt --no-banner create --platforms ios --type app" + 
+			" --id com.appcelerator.harness --sdk " + sdkName + " --workspace-dir " + path.resolve(driverGlobal.harnessDir,"ios") + 
+			" --name harness --url 'http://' --verbose --force",
 			successCallback,
 			errorCallback
 			);
@@ -118,7 +121,8 @@ module.exports = new function() {
 		var runCallback = function() {
 			var stdoutCallback = function(message) {
 				driverUtils.log(message, driverGlobal.logLevels.verbose);
-				if (message.indexOf("[INFO] Application started") > -1) {
+				var value = message.indexOf("Application started");
+				if (value > -1) {
 					successCallback();
 				}
 			}
@@ -129,8 +133,15 @@ module.exports = new function() {
 			TODO: investigate running simulator separately from the build script so we can get 
 			error reporting to work correctly when the simulator fails to launch
 			*/
-			var args = ["simulator", simVersion, path.resolve(driverGlobal.harnessDir, "ios", "harness"), "com.appcelerator.harness", "harness"];
-			driverUtils.runProcess(path.resolve(driverGlobal.config.targetTiSdkDir, "iphone", "builder.py"), args, stdoutCallback, 0, function(code) {
+
+			//NOTE : important to change the default location of the SDK's
+			var sdkName = driverGlobal.config.targetTiSdkDir.replace(/^.*[\\\/]/, '');
+
+			var args = ["--no-colors", "--no-prompt", "build", "--project-dir", path.resolve(driverGlobal.harnessDir, "ios", "harness")];
+			args.push("--platform", "iphone", "--sdk", sdkName, "--log-level", "trace", "--target", "simulator");
+			args.push("--device-family", "iphone", "--sim-version", simVersion, "--device-family", "iphone", "--retina", "--tall", "--skip-js-minify");
+
+			driverUtils.runProcess(driverGlobal.cliDir, args, stdoutCallback, 0, function(code) {
 				if (code !== 0) {
 					driverUtils.log("error encountered when running harness: " + code);
 					errorCallback();

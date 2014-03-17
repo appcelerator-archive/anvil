@@ -13,6 +13,7 @@ var net = require("net"),
 path = require("path"),
 os = require("os"),
 common = require(path.resolve(driverGlobal.driverDir, "common")),
+fs = require("fs"),
 driverUtils = require(path.resolve(driverGlobal.driverDir, "driverUtils"));
 
 module.exports = new function() {
@@ -58,7 +59,6 @@ module.exports = new function() {
 	};
 
 	var createHarness = function(successCallback, errorCallback) {
-		var argString = "create --dir=" + path.resolve(driverGlobal.harnessDir, "android") + " --platform=android --name=harness --type=project --id=com.appcelerator.harness --android=" + path.resolve(driverGlobal.config.androidSdkDir);
 
 		/*
 		make sure the harness has access to what port number it should listen on for a connection 
@@ -71,9 +71,13 @@ module.exports = new function() {
 			argString = argString.replace(/\\/g, "\\\\");
 		}
 
+		var sdkName = driverGlobal.config.targetTiSdkDir.replace(/^.*[\\\/]/, '');
+
 		common.createHarness(
 			"android",
-			"\"" + path.resolve(driverGlobal.config.targetTiSdkDir, "titanium.py") + "\" " + argString,
+			driverGlobal.cliDir + " --no-colors --no-progress-bars --no-prompt --no-banner create --platforms android --type app" + 
+			" --id com.appcelerator.harness --sdk " + sdkName + " --workspace-dir " + path.resolve(driverGlobal.harnessDir,"android") + 
+			" --name harness --url 'http://' --verbose --force",
 			successCallback,
 			errorCallback
 			);
@@ -85,17 +89,14 @@ module.exports = new function() {
 
 	var buildHarness = function(successCallback, errorCallback) {
 		var buildCallback = function() {
-			var args = [
-				path.resolve(driverGlobal.config.targetTiSdkDir, "android", "builder.py"),
-				"build",
-				"harness",
-				path.resolve(driverGlobal.config.androidSdkDir),
-				path.resolve(driverGlobal.harnessDir, "android", "harness"),
-				"com.appcelerator.harness",
-				8
-				];
 
-			driverUtils.runProcess("python", args, 0, 0, function(code) {
+			var sdkName = driverGlobal.config.targetTiSdkDir.replace(/^.*[\\\/]/, '');
+
+			var args = ["--no-colors", "--no-prompt", "build", "--project-dir", path.resolve(driverGlobal.harnessDir, "android", "harness")];
+			args.push("--platform", "android", "--sdk", sdkName, "--log-level", "trace", "--target", "device");
+			args.push("--build-only", "--skip-js-minify");
+
+			driverUtils.runProcess(driverGlobal.cliDir, args, 0, 0, function(code) {
 				if (code !== 0) {
 					driverUtils.log("error encountered when building harness: " + code);
 					errorCallback();
@@ -146,22 +147,53 @@ module.exports = new function() {
 
 	var installHarness = function(successCallback, errorCallback) {
 		var installCallback = function() {
-			if (path.existsSync(path.resolve(driverGlobal.harnessDir, "android", "harness", "build", "android", "bin", "app.apk"))) {
-				driverUtils.runCommand("adb install " + path.resolve(driverGlobal.harnessDir, "android/harness/build/android/bin/app.apk"), driverUtils.logStdout, function(error) {
-					if (error !== null) {
-						driverUtils.log("error encountered when installing harness: " + error);
-						if (errorCallback) {
-							errorCallback();
-						}
+			var apkname , apkpath, files;
+			console.log("reached installharness");
 
+			if(path.existsSync(path.resolve(driverGlobal.harnessDir, "android", "harness", "build", "android", "bin"))) {
+				var files = fs.readdirSync(path.resolve(driverGlobal.harnessDir, "android", "harness", "build", "android", "bin"));
+				if (files) {
+
+					files.filter(function(file) {
+									return file.substr(-4) == '.apk' ;
+								}).forEach(function(file) {
+												if(file != 'app-unsigned.apk') {
+													apkname = file;
+												}
+											});
+
+					if(typeof apkname === undefined) {
+						driverUtils.log("harness is not built, building");
+						buildHarness(installCallback, errorCallback);
 					} else {
-						driverUtils.log("harness installed");
-						if (successCallback) {
-							successCallback();
+						apkpath = path.resolve(driverGlobal.harnessDir, "android", "harness", "build", "android", "bin", apkname);
+						if (path.existsSync(apkpath)) {
+							driverUtils.runCommand("adb install -r " + apkpath, driverUtils.logStdout, function(error, stdout, stderr) {
+
+								if (stdout.indexOf("Failure [INSTALL_FAILED_ALREADY_EXISTS]") != -1) {
+									uninstallHarness(installCallback, errorCallback);
+								}
+								else if (stdout.indexOf("Failure") != -1) {
+									driverUtils.log("error encountered when installing harness: " + stdout);
+									if (errorCallback) {
+										errorCallback();
+									}
+								} else {
+									driverUtils.log("harness installed" + stdout);
+									if (successCallback) {
+										setTimeout(successCallback, 5000);
+									}
+								}
+							});
+						} else {
+							driverUtils.log("harness is not built, building");
+							buildHarness(installCallback, errorCallback);
 						}
 					}
-				});
-
+				} else {
+					driverUtils.log("harness is not built, building");
+					buildHarness(installCallback, errorCallback);
+				}
 			} else {
 				driverUtils.log("harness is not built, building");
 				buildHarness(installCallback, errorCallback);
@@ -172,13 +204,22 @@ module.exports = new function() {
 	};
 
 	var uninstallHarness = function(successCallback, errorCallback) {
-		driverUtils.runCommand("adb uninstall com.appcelerator.harness", driverUtils.logStdout, function(error) {
-			if (error !== null) {
-				driverUtils.log("error encountered when uninstalling harness: " + error);
-				if (errorCallback) {
-					errorCallback();
-				}
-
+		driverUtils.runCommand("adb uninstall com.appcelerator.harness", driverUtils.logStdout, function(error, stdout, stderr) {
+			if (stdout.indexOf("Failure") != -1) {
+				driverUtils.log("error encountered when uninstalling harness: " + stdout);
+				driverUtils.runCommand("adb uninstall org.appcelerator.titanium.testharness", driverUtils.logStdout, function(error, stdout, stderr) {
+					if (stdout.indexOf("Failure") != -1) {
+						driverUtils.log("error encountered when uninstalling harness: " + stdout);
+							if (successCallback) {
+								successCallback();
+							}
+					} else {
+						driverUtils.log("harness uninstalled");
+						if (successCallback) {
+							successCallback();
+						}
+					}
+				});
 			} else {
 				driverUtils.log("harness uninstalled");
 				if (successCallback) {
@@ -189,13 +230,26 @@ module.exports = new function() {
 	};
 
 	var runHarness = function(successCallback, errorCallback) {
-		driverUtils.runCommand("adb shell am start -n com.appcelerator.harness/.HarnessActivity", driverUtils.logStdout, function(error) {
-			if (error !== null) {
-				driverUtils.log("error encountered when running harness: " + error);
-				if (errorCallback) {
-					errorCallback();
-				}
+		driverUtils.runCommand("adb shell am start -n com.appcelerator.harness/.HarnessActivity", driverUtils.logStdout, function(error, stdout, stderr) {
 
+			if (stdout.indexOf("Error") != -1) {
+				driverUtils.log("error encountered when running harness: " + stdout);
+
+				driverUtils.log("Trying to run alternative harness name : " );
+
+				driverUtils.runCommand("adb shell am start -n org.appcelerator.titanium.testharness/.Test_harnessActivity", driverUtils.logStdout, function(error,stdout, stderr) {
+					if (stdout.indexOf("Error") != -1) {
+						driverUtils.log("error encountered when running harness: " + stdout);
+						if (errorCallback) {
+							errorCallback();
+						}
+					} else {
+						driverUtils.log("running harness");
+						if (successCallback) {
+							successCallback();
+						}
+					}
+				});
 			} else {
 				driverUtils.log("running harness");
 				if (successCallback) {
