@@ -274,7 +274,7 @@ function loadConfigModule() {
 				process.exit(1);
 			}
 		} else {
-			driverGlobal.cliDir = __dir;
+			driverGlobal.cliDir = path.resolve(config.titaniumCLIpath, "node_modules/titanium/bin/titanium");
 		}
 
 	}

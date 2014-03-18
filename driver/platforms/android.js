@@ -73,11 +73,12 @@ module.exports = new function() {
 
 		var sdkName = driverGlobal.config.targetTiSdkDir.replace(/^.*[\\\/]/, '');
 
+		var args =  ["--no-colors", "--no-progress-bars", "--no-prompt", "--no-banner", "create", "--platforms", "ios", "--type", "app"];
+		args.push( "--id", "com.appcelerator.harness", "--sdk", sdkName ,"--workspace-dir", path.resolve(driverGlobal.harnessDir,"android"));
+		args.push( "--name", "harness", "--url", "http://", "--verbose", "--force");
 		common.createHarness(
 			"android",
-			driverGlobal.cliDir + " --no-colors --no-progress-bars --no-prompt --no-banner create --platforms android --type app" + 
-			" --id com.appcelerator.harness --sdk " + sdkName + " --workspace-dir " + path.resolve(driverGlobal.harnessDir,"android") + 
-			" --name harness --url 'http://' --verbose --force",
+			args,
 			successCallback,
 			errorCallback
 			);

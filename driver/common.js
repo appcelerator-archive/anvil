@@ -298,13 +298,18 @@ module.exports = new function() {
 				driverUtils.log("temp " + platform + " harness dir already exist");
 			}
 
-			driverUtils.runCommand(command, driverUtils.logStdout, function(error) {
-				if (error !== null) {
-					driverUtils.log("error encountered when creating harness: " + error);
-					if (errorCallback) {
-						errorCallback();
-					}
-
+			var stdoutCallback = function(message) {
+				driverUtils.log(message, driverGlobal.logLevels.verbose);
+				var value = message.indexOf("Hareness created successfully");
+				if (value > -1) {
+					successCallback();
+				}
+			}
+			console.log("driverGlobal.cliDir"+driverGlobal.cliDir);
+			driverUtils.runProcess(driverGlobal.cliDir, command, stdoutCallback, 0, function(code) {
+				if (code !== 0) {
+					driverUtils.log("error encountered when creating harness: " + code);
+					errorCallback();
 				} else {
 					driverUtils.log("harness created");
 					updateHarness(platform, successCallback, errorCallback);
