@@ -87,11 +87,12 @@ module.exports = new function() {
 		common.customTiappXmlProperties["driver.socketPort"] = {value: driverGlobal.config.iosSocketPort, type: "int"};
 		var sdkName = driverGlobal.config.targetTiSdkDir.replace(/^.*[\\\/]/, '');
 
+		var args =  ["--no-colors", "--no-progress-bars", "--no-prompt", "--no-banner", "create", "--platforms", "ios", "--type", "app"];
+		args.push( "--id", "com.appcelerator.harness", "--sdk", sdkName ,"--workspace-dir", path.resolve(driverGlobal.harnessDir,"ios"));
+		args.push( "--name", "harness", "--url", "http://", "--verbose", "--force");
 		common.createHarness(
 			"ios",
-			driverGlobal.cliDir + " --no-colors --no-progress-bars --no-prompt --no-banner create --platforms ios --type app" + 
-			" --id com.appcelerator.harness --sdk " + sdkName + " --workspace-dir " + path.resolve(driverGlobal.harnessDir,"ios") + 
-			" --name harness --url 'http://' --verbose --force",
+			args,
 			successCallback,
 			errorCallback
 			);
