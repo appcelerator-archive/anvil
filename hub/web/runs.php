@@ -2,8 +2,8 @@
 	require "common.php";
 	db_open();
 
-	$branch = $_GET["branch"];
-	$last_run_id = $_GET["last_run_id"];
+	$branch = htmlspecialchars($_GET["branch"]);
+	$last_run_id = htmlspecialchars($_GET["last_run_id"]);
 	$branch_specified = is_null($branch) ? false : true;
 
 ?>
